@@ -1,0 +1,102 @@
+
+
+
+
+
+
+
+```{r}
+
+library(lubridate)
+library(dplyr)
+library(tibble)
+library(tidyr)
+
+library(ggplot2)
+theme_set(theme_minimal())
+options(stringsAsFactors = FALSE)
+
+
+#data2
+
+file<-read.csv("C:/Users/mylau/Desktop/myfile.csv",header=TRUE,stringsAsFactors = FALSE)
+
+
+
+cases<-log10(file$cases)
+deaths<-log10(file$deaths)
+confirmed_cases<-log10(file$confirmed_cases)
+confirmed_deaths<-log10(file$confirmed_deaths)
+new_confirmed_cases<-log10(file$new_confirmed_cases)
+new_deaths<-log10(file$new_deaths)
+
+
+sc<-subset(file, county=="Santa Clara"| county == "Los Angeles")
+sc
+str(sc)
+
+
+```
+
+
+```{r}
+sc$date <- as.Date(sc$date,format = "%m/%d/%y")
+
+ggplot(sc, aes(x=date, y=cases, group=county, color=county)) +
+  geom_point() +
+  geom_line() +
+  scale_x_date(date_breaks = "1 month",  date_labels = "%b %d")
+
+
+ggplot(sc, aes(x=date, y=deaths, group=county, color=county)) +
+  geom_point() +
+  geom_line() +
+  scale_x_date(date_breaks = "1 month",  date_labels = "%b %d")
+
+
+```
+
+
+
+```{r}
+
+sc$new_confirmed_cases<-as.numeric (sc$new_confirmed_cases)
+sc$new_deaths<-as.numeric (sc$new_deaths)
+new_confirmed_cases <- sc$new_confirmed_cases
+new_confirmed_cases <- new_confirmed_cases[!is.na(new_confirmed_cases)]
+
+new_deaths <- sc$new_deaths
+new_deaths <- new_deaths[!is.na(new_deaths)]
+
+
+sc%>%
+  summarise(max(cases),max(deaths),max(confirmed_cases),max(confirmed_deaths))
+
+
+
+sc %>%
+  summarize(
+    num_days = n(), total_cases = max(cases,na.rm=TRUE), total_deaths = max(deaths,na.rm=TRUE),
+    mortality_rate = ((max(deaths,na.rm=TRUE) / max(cases,na.rm=TRUE))*100)
+  )
+```
+
+
+```{r}
+
+
+
+cases<-sc%>%
+  mutate(cases=as.character(cases))
+sc$date <- as.Date(sc$date,format = "%m/%d/%y")
+
+sc%>% ggplot(aes(x = date, y = cases)) +
+geom_point() +
+geom_smooth() 
+```
+
+
+
+
+
+
